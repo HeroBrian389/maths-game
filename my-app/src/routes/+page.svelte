@@ -50,78 +50,104 @@
 	}
 
 	function generateQuestion() {
-		const operations = ['add', 'subtract', 'multiply', 'divide', 'probability'] as const;
-		type Operation = (typeof operations)[number];
+    const operations = ['add', 'subtract', 'multiply', 'divide', 'probability', 'gcd'] as const;
+    type Operation = (typeof operations)[number];
 
-		// Adjust probability distribution
-		const rand = Math.random();
-		let operation: Operation;
-		if (rand < 0.25) {
-			operation = 'add';
-		} else if (rand < 0.5) {
-			operation = 'subtract';
-		} else if (rand < 0.7) {
-			operation = 'multiply';
-		} else if (rand < 0.9) {
-			operation = 'divide';
-		} else {
-			operation = 'probability';
-		}
+    // Adjust probability distribution
+    const rand = Math.random();
+    let operation: Operation;
 
-		switch (operation) {
-			case 'add':
-				const a = Math.floor(Math.random() * 99) + 2; // 2 to 100
-				const b = Math.floor(Math.random() * 99) + 2; // 2 to 100
-				currentQuestion = `${a} + ${b} = ?`;
-				correctAnswer = a + b;
-				break;
-			case 'subtract':
-				const c = Math.floor(Math.random() * 99) + 2; // 2 to 100
-				const d = Math.floor(Math.random() * 99) + 2; // 2 to 100
-				const sum = c + d;
-				currentQuestion = `${sum} - ${c} = ?`;
-				correctAnswer = d;
-				break;
-			case 'multiply':
-				const e = Math.floor(Math.random() * 11) + 2; // 2 to 12
-				const f = Math.floor(Math.random() * 99) + 2; // 2 to 100
-				currentQuestion = `${e} × ${f} = ?`;
-				correctAnswer = e * f;
-				break;
-			case 'divide':
-				const g = Math.floor(Math.random() * 11) + 2; // 2 to 12
-				const h = Math.floor(Math.random() * 99) + 2; // 2 to 100
-				const product = g * h;
-				currentQuestion = `${product} ÷ ${g} = ?`;
-				correctAnswer = h;
-				break;
-
-			case 'probability':
-				const total = Math.floor(Math.random() * 91) + 10; // 10 to 100
-				let part: number;
-
-				// Ensure we get a proper ratio (not all items and not just 1 item)
-				do {
-					part = Math.floor(Math.random() * (total - 1)) + 1;
-				} while (part === 1 || part === total);
-
-				const gcd = findGCD(part, total);
-				const simplifiedPart = part / gcd;
-				const simplifiedTotal = total / gcd;
-
-				const questionType = Math.random() < 0.5 ? 'partToWhole' : 'wholeToPart';
-
-				if (questionType === 'partToWhole') {
-					currentQuestion = `If ${simplifiedPart} out of every ${simplifiedTotal} items are selected, what percentage does this represent?`;
-					correctAnswer = Math.round((simplifiedPart / simplifiedTotal) * 100);
-				} else {
-					const percentage = Math.round((simplifiedPart / simplifiedTotal) * 100);
-					currentQuestion = `If ${percentage}% of items are selected, what is this as a simplified ratio? (Enter the number of selected items, assuming the total is ${simplifiedTotal})`;
-					correctAnswer = simplifiedPart;
-				}
-				break;
-		}
+	// each operation has equal chance
+	if (rand < 1 / operations.length) {
+		operation = 'add';
+	} else if (rand < 2 / operations.length) {
+		operation = 'subtract';
+	} else if (rand < 3 / operations.length) {
+		operation = 'multiply';
+	} else if (rand < 4 / operations.length) {
+		operation = 'divide';
+	} else if (rand < 5 / operations.length) {
+		operation = 'probability';
+	} else {
+		operation = 'gcd';
 	}
+
+    switch (operation) {
+        case 'add':
+            const a = Math.floor(Math.random() * 99) + 2; // 2 to 100
+            const b = Math.floor(Math.random() * 99) + 2; // 2 to 100
+            currentQuestion = `${a} + ${b} = ?`;
+            correctAnswer = a + b;
+            break;
+        case 'subtract':
+            const c = Math.floor(Math.random() * 99) + 2; // 2 to 100
+            const d = Math.floor(Math.random() * 99) + 2; // 2 to 100
+            const sum = c + d;
+            currentQuestion = `${sum} - ${c} = ?`;
+            correctAnswer = d;
+            break;
+        case 'multiply':
+            const e = Math.floor(Math.random() * 11) + 2; // 2 to 12
+            const f = Math.floor(Math.random() * 99) + 2; // 2 to 100
+            currentQuestion = `${e} × ${f} = ?`;
+            correctAnswer = e * f;
+            break;
+        case 'divide':
+            const g = Math.floor(Math.random() * 11) + 2; // 2 to 12
+            const h = Math.floor(Math.random() * 99) + 2; // 2 to 100
+            const product = g * h;
+            currentQuestion = `${product} ÷ ${g} = ?`;
+            correctAnswer = h;
+            break;
+        case 'probability':
+            generateProbabilityQuestion();
+            break;
+		case 'gcd':
+			generateGCDQuestion();
+    }
+}
+
+function generateProbabilityQuestion() {
+    const questionTypes = ['partToWhole', 'wholeToPart'] as const;
+    const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+
+    switch (questionType) {
+        case 'partToWhole':
+            generatePartToWholeQuestion();
+            break;
+        case 'wholeToPart':
+            generateWholeToPartQuestion();
+            break;
+    }
+}
+
+function generateGCDQuestion() {
+	const a = Math.floor(Math.random() * 99) + 2; // 2 to 100
+	const b = Math.floor(Math.random() * 99) + 2; // 2 to 100
+	const gcd = findGCD(a, b);
+
+	currentQuestion = `Find the greatest common divisor of ${a} and ${b}.`;
+	correctAnswer = gcd;
+}
+
+function generatePartToWholeQuestion() {
+    const total = Math.floor(Math.random() * 91) + 10; // 10 to 100
+    const part = Math.floor(Math.random() * (total - 1)) + 1;
+    const percentage = Math.round((part / total) * 100);
+
+    currentQuestion = `If ${part} out of ${total} marbles are red, what percentage are red?`;
+    correctAnswer = percentage;
+}
+
+function generateWholeToPartQuestion() {
+    const percentage = Math.floor(Math.random() * 96) + 5; // 5% to 100%
+    const total = Math.floor(Math.random() * 91) + 10; // 10 to 100
+    const part = Math.round((percentage / 100) * total);
+
+    currentQuestion = `If ${percentage}% of ${total} students are girls, how many girls are there?`;
+    correctAnswer = part;
+}
+
 
 	// Helper function to find the Greatest Common Divisor (GCD)
 	function findGCD(a: number, b: number): number {
@@ -168,7 +194,7 @@
 		throw new Error(data.message);
 	}
 
-    playerRank = result.rank;
+    playerRank = data.rank;
     toast.success('Score saved successfully!');
   } catch (error) {
     console.error('Error saving score:', error);
@@ -206,7 +232,7 @@
 	{:else if gameState === GameState.Playing}
 		<div class="mx-auto max-w-lg">
 			<h2 class="mb-4 text-xl font-semibold">{currentQuestion}</h2>
-			<Input type="number" placeholder="Your answer" bind:value={userAnswer} class="mb-4" />
+			<Input type="text" placeholder="Your answer" bind:value={userAnswer} class="mb-4" />
 			<div class="mb-2 flex justify-between">
 				<span>Score: {score}</span>
 				<span>Time Left: {timeLeft}s</span>

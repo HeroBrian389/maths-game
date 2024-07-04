@@ -49,14 +49,12 @@ export const actions: Actions = {
       await kv.zadd('leaderboard', { score, member });
 
       const rank = await kv.zrevrank('leaderboard', member);
-
       const totalEntries = await kv.zcard('leaderboard');
 
-      if (rank === null || rank >= 10) {
+      if (rank === null) {
         return { 
           success: true, 
-          rank: rank !== null ? rank + 1 : totalEntries, 
-          message: "Score saved, but not in the top 10."
+          rank: totalEntries
         };
       }
 
