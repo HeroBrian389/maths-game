@@ -45,15 +45,29 @@ export const actions: Actions = {
 
     try {
       const member = `${playerName}|${score}|${date}`;
+
       await kv.zadd('leaderboard', { score, member });
 
-      // Calculate player's rank
       const rank = await kv.zrevrank('leaderboard', member);
-      
-      return { success: true, rank: rank !== null ? rank + 1 : null };
+
+      const totalEntries = await kv.zcard('leaderboard');
+
+      if (rank === null || rank >= 10) {
+        return { 
+          success: true, 
+          rank: rank !== null ? rank + 1 : totalEntries, 
+          message: "Score saved, but not in the top 10."
+        };
+      }
+
+      return { success: true, rank: rank + 1 };
     } catch (error) {
-      console.error('Error saving score:', error);
-      return { success: false, error: 'Failed to save score' };
+      console.error('Detailed error in saveScore:', error);
+      if (error instanceof Error) {
+        return { success: false, error: `Failed to save score: ${error.message}` };
+      } else {
+        return { success: false, error: 'Failed to save score: Unknown error' };
+      }
     }
   }
 };

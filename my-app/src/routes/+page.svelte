@@ -21,7 +21,7 @@
 	let correctAnswer: number | string;
 	let userAnswer = '';
 	let score = 0;
-	let timeLimit = 120;
+	let timeLimit = 3;
 	let timeLeft = timeLimit;
 	let timerInterval: NodeJS.Timeout | undefined;
 	let playerRank: number | null = null;
@@ -153,11 +153,20 @@
       body: formData
     });
 
-    const result = await response.json();
+	const result = await response.json();
 
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to save score');
-    }
+	const dataResponse = JSON.parse(result.data)
+
+	if (dataResponse.error) {
+		throw new Error(dataResponse.error);
+	}
+
+    // Check if the result is an array and get the first element
+    const data = Array.isArray(dataResponse) ? dataResponse[0] : dataResponse;
+
+	if (!data.success) {
+		throw new Error(data.message);
+	}
 
     playerRank = result.rank;
     toast.success('Score saved successfully!');
