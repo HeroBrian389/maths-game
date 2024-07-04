@@ -46,19 +46,16 @@ export const actions: Actions = {
     try {
       const member = `${playerName}|${score}|${date}`;
 
+      // Add the new score
       await kv.zadd('leaderboard', { score, member });
 
-      const rank = await kv.zrevrank('leaderboard', member);
-      const totalEntries = await kv.zcard('leaderboard');
+      // Get all scores higher than or equal to the current score
+      const higherScores = await kv.zcount('leaderboard', score, '+inf');
 
-      if (rank === null) {
-        return { 
-          success: true, 
-          rank: totalEntries
-        };
-      }
+      // The rank is the number of higher scores + 1
+      const rank = higherScores;
 
-      return { success: true, rank: rank + 1 };
+      return { success: true, rank };
     } catch (error) {
       console.error('Detailed error in saveScore:', error);
       if (error instanceof Error) {
