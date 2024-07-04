@@ -21,7 +21,7 @@
 	let correctAnswer: number | string;
 	let userAnswer = '';
 	let score = 0;
-	let timeLimit = 3;
+	let timeLimit = 120;
 	let timeLeft = timeLimit;
 	let timerInterval: NodeJS.Timeout | undefined;
 	let playerRank: number | null = null;
