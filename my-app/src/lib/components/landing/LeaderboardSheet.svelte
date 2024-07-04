@@ -10,6 +10,7 @@
 		SheetTrigger
 	} from '$lib/components/ui/sheet';
 	import { toast } from 'svelte-sonner';
+    import { Ranking } from 'phosphor-svelte'
 
 	interface LeaderboardEntry {
 		playerName: string;
@@ -45,7 +46,13 @@
 
 <Sheet onOpenChange={handleSheetOpenChange}>
 	<SheetTrigger>
-		<Button variant="outline">View Leaderboard</Button>
+		<Button variant="outline">
+            <span class='md:block hidden'>
+                View Leaderboard
+            </span>
+            <span class='md:hidden block'>
+                <Ranking size={24} />
+        </Button>
 	</SheetTrigger>
     
 	<SheetContent>
