@@ -15,10 +15,19 @@
 	interface LeaderboardEntry {
 		playerName: string;
 		score: number;
+        date: string;
 	}
 
 	let leaderboard: LeaderboardEntry[] = [];
 	let isOpen = false;
+
+	function formatDate(date: string) {
+		// date is in format "2021-09-30T00:00:00.000Z" e.g. 2024-07-04T13:10:04.722Z
+		const d = new Date(date);
+
+		// return it like "4th July 2024"
+		return `${d.getDate()} ${d.toLocaleString('default', { month: 'long' })} ${d.getFullYear()}`;
+	}
 
 	async function fetchLeaderboard() {
 		try {
@@ -27,7 +36,6 @@
 				throw new Error('Failed to fetch leaderboard');
 			}
 			leaderboard = await response.json();
-            console.log(leaderboard);
 		} catch (error) {
 			console.error('Error fetching leaderboard:', error);
 			toast.error('Failed to fetch leaderboard');
@@ -67,6 +75,9 @@
 						<li class="border-b py-2 last:border-b-0">
 							<span class="font-bold">{i + 1}.</span>
 							{entry.playerName}: {entry.score}
+							{#if entry.date}
+								<span class="text-sm text-gray-500"> - {formatDate(entry.date)}</span>
+							{/if}
 						</li>
 					{/each}
 				</ul>

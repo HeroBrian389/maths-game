@@ -32,13 +32,12 @@ export const load = async () => {
   return { leaderboard };
 };
 
-
 export const actions: Actions = {
   saveScore: async ({ request }) => {
     const formData = await request.formData();
     const playerName = formData.get('playerName');
     const score = Number(formData.get('score'));
-    const date = formData.get('date');
+    const date = formData.get('date') || new Date().toISOString();
 
     if (typeof playerName !== 'string' || isNaN(score) || typeof date !== 'string') {
       return { success: false, error: 'Invalid input' };

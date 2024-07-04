@@ -10,6 +10,7 @@ const kv = createClient({
 interface LeaderboardEntry {
   playerName: string;
   score: number;
+  date: string;
 }
 
 export const GET: RequestHandler = async () => {
@@ -21,9 +22,11 @@ export const GET: RequestHandler = async () => {
 
     const leaderboard: LeaderboardEntry[] = [];
     for (let i = 0; i < leaderboardData.length; i += 2) {
+      const [playerName, score, date] = (leaderboardData[i] as string).split('|');
       leaderboard.push({
-        playerName: leaderboardData[i] as string,
-        score: Number(leaderboardData[i + 1])
+        playerName,
+        score: Number(score),
+        date
       });
     }
 
