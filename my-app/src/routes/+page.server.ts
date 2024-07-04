@@ -10,6 +10,7 @@ const kv = createClient({
 interface LeaderboardEntry {
   playerName: string;
   score: number;
+  gameMode: string;
   date: string;
 }
 
@@ -21,10 +22,11 @@ export const load = async () => {
 
   const leaderboard: LeaderboardEntry[] = [];
   for (let i = 0; i < leaderboardData.length; i += 2) {
-    const [playerName, score, date] = (leaderboardData[i] as string).split('|');
+    const [playerName, score, gameMode, date] = (leaderboardData[i] as string).split('|');
     leaderboard.push({
       playerName,
       score: Number(score),
+      gameMode,
       date
     });
   }
@@ -32,25 +34,30 @@ export const load = async () => {
   return { leaderboard };
 };
 
+
 export const actions: Actions = {
   saveScore: async ({ request }) => {
     const formData = await request.formData();
     const playerName = formData.get('playerName');
     const score = Number(formData.get('score'));
+    const gameMode = formData.get('gameMode');
     const date = formData.get('date') || new Date().toISOString();
 
-    if (typeof playerName !== 'string' || isNaN(score) || typeof date !== 'string') {
+    if (typeof playerName !== 'string' || isNaN(score) || typeof gameMode !== 'string' || typeof date !== 'string') {
       return { success: false, error: 'Invalid input' };
     }
 
     try {
-      const member = `${playerName}|${score}|${date}`;
+      const member = `${playerName}|${score}|${gameMode}|${date}`;
 
-      // Add the new score
-      await kv.zadd('leaderboard', { score, member });
+      // save member in leaderboard
+      await kv.zadd('leaderboard', { score: score, member: member });
+      await kv.zadd(`leaderboard:${gameMode}`, { score: score, member: member });
 
-      // Get all scores higher than or equal to the current score
-      const higherScores = await kv.zcount('leaderboard', score, '+inf');
+      // Get all scores higher than or equal to the current score for this game mode
+      const higherScores = await kv.zcount(`leaderboard:${gameMode}`, score, '+inf');
+
+      console.log(`New score for ${playerName} in ${gameMode}: ${score} (rank ${higherScores + 1})`);
 
       // The rank is the number of higher scores + 1
       const rank = higherScores;

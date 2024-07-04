@@ -3,6 +3,8 @@
   import { Button } from "$lib/components/ui/button";
   import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "$lib/components/ui/card";
 
+  export let timeLimit: number = 120
+
   const dispatch = createEventDispatcher();
 
   function handleContinue() {
@@ -18,7 +20,7 @@
   <CardContent>
     <p class="mb-2">How to play:</p>
     <ul class="list-disc list-inside mb-4">
-      <li>You have 60 seconds to answer as many questions as you can</li>
+      <li>You have {timeLimit} seconds to answer as many questions as you can</li>
       <li>Questions include addition, subtraction, multiplication, division, and probability</li>
       <li>For probability questions, give the nearest whole number percentage (e.g., 0.33 becomes 33)</li>
       <li>Your score is based on the number of correct answers</li>

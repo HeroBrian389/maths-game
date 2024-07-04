@@ -6,10 +6,13 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import WelcomeCard from '$lib/components/landing/WelcomeCard.svelte';
 	import LeaderboardSheet from '$lib/components/landing/LeaderboardSheet.svelte';
+	import { Game } from '$lib/Game';
+	import ModeSelectionCard from '$lib/components/landing/ModeSelectionCard.svelte';
 
 	enum GameState {
 		Welcome,
 		NameEntry,
+		ModeSelection,
 		Ready,
 		Playing,
 		EndScreen
@@ -17,14 +20,37 @@
 
 	let gameState: GameState = GameState.Welcome;
 	let playerName = '';
+	let selectedMode = '';
+	let game: Game;
 	let currentQuestion = '';
-	let correctAnswer: number | string;
 	let userAnswer = '';
-	let score = 0;
 	let timeLimit = 120;
 	let timeLeft = timeLimit;
 	let timerInterval: NodeJS.Timeout | undefined;
 	let playerRank: number | null = null;
+
+	const gameModes = [
+		{
+			mode: 'basic',
+			title: 'Basic Mode',
+			description: 'Practice with numbers up to 100. Ideal for beginners.'
+		},
+		{
+			mode: 'advanced',
+			title: 'Advanced Mode',
+			description: 'Challenge yourself with larger numbers up to 1000.'
+		},
+		{
+			mode: 'probability',
+			title: 'Probability Mode',
+			description: 'Test your skills with percentage and probability questions.'
+		},
+		{
+			mode: 'largeNumbers',
+			title: 'Large Numbers Mode',
+			description: 'Master operations with very large numbers.'
+		}
+	];
 
 	function handleWelcomeContinue() {
 		gameState = GameState.NameEntry;
@@ -32,15 +58,20 @@
 
 	function handleNameSubmit() {
 		if (playerName.trim()) {
-			gameState = GameState.Ready;
+			gameState = GameState.ModeSelection;
 		} else {
 			toast.error('Please enter your name');
 		}
 	}
 
+	function handleModeSelection(mode: string) {
+		selectedMode = mode;
+		game = new Game(mode);
+		gameState = GameState.Ready;
+	}
+
 	function startGame() {
 		gameState = GameState.Playing;
-		score = 0;
 		timeLeft = timeLimit;
 		generateQuestion();
 		timerInterval = setInterval(() => {
@@ -50,113 +81,11 @@
 	}
 
 	function generateQuestion() {
-    const operations = ['add', 'subtract', 'multiply', 'divide', 'probability', 'gcd'] as const;
-    type Operation = (typeof operations)[number];
-
-    // Adjust probability distribution
-    const rand = Math.random();
-    let operation: Operation;
-
-	// each operation has equal chance
-	if (rand < 1 / operations.length) {
-		operation = 'add';
-	} else if (rand < 2 / operations.length) {
-		operation = 'subtract';
-	} else if (rand < 3 / operations.length) {
-		operation = 'multiply';
-	} else if (rand < 4 / operations.length) {
-		operation = 'divide';
-	} else if (rand < 5 / operations.length) {
-		operation = 'probability';
-	} else {
-		operation = 'gcd';
-	}
-
-    switch (operation) {
-        case 'add':
-            const a = Math.floor(Math.random() * 99) + 2; // 2 to 100
-            const b = Math.floor(Math.random() * 99) + 2; // 2 to 100
-            currentQuestion = `${a} + ${b} = ?`;
-            correctAnswer = a + b;
-            break;
-        case 'subtract':
-            const c = Math.floor(Math.random() * 99) + 2; // 2 to 100
-            const d = Math.floor(Math.random() * 99) + 2; // 2 to 100
-            const sum = c + d;
-            currentQuestion = `${sum} - ${c} = ?`;
-            correctAnswer = d;
-            break;
-        case 'multiply':
-            const e = Math.floor(Math.random() * 11) + 2; // 2 to 12
-            const f = Math.floor(Math.random() * 99) + 2; // 2 to 100
-            currentQuestion = `${e} × ${f} = ?`;
-            correctAnswer = e * f;
-            break;
-        case 'divide':
-            const g = Math.floor(Math.random() * 11) + 2; // 2 to 12
-            const h = Math.floor(Math.random() * 99) + 2; // 2 to 100
-            const product = g * h;
-            currentQuestion = `${product} ÷ ${g} = ?`;
-            correctAnswer = h;
-            break;
-        case 'probability':
-            generateProbabilityQuestion();
-            break;
-		case 'gcd':
-			generateGCDQuestion();
-    }
-}
-
-function generateProbabilityQuestion() {
-    const questionTypes = ['partToWhole', 'wholeToPart'] as const;
-    const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-
-    switch (questionType) {
-        case 'partToWhole':
-            generatePartToWholeQuestion();
-            break;
-        case 'wholeToPart':
-            generateWholeToPartQuestion();
-            break;
-    }
-}
-
-function generateGCDQuestion() {
-	const a = Math.floor(Math.random() * 99) + 2; // 2 to 100
-	const b = Math.floor(Math.random() * 99) + 2; // 2 to 100
-	const gcd = findGCD(a, b);
-
-	currentQuestion = `Find the greatest common divisor of ${a} and ${b}.`;
-	correctAnswer = gcd;
-}
-
-function generatePartToWholeQuestion() {
-    const total = Math.floor(Math.random() * 91) + 10; // 10 to 100
-    const part = Math.floor(Math.random() * (total - 1)) + 1;
-    const percentage = Math.round((part / total) * 100);
-
-    currentQuestion = `If ${part} out of ${total} marbles are red, what percentage are red?`;
-    correctAnswer = percentage;
-}
-
-function generateWholeToPartQuestion() {
-    const percentage = Math.floor(Math.random() * 96) + 5; // 5% to 100%
-    const total = Math.floor(Math.random() * 91) + 10; // 10 to 100
-    const part = Math.round((percentage / 100) * total);
-
-    currentQuestion = `If ${percentage}% of ${total} students are girls, how many girls are there?`;
-    correctAnswer = part;
-}
-
-
-	// Helper function to find the Greatest Common Divisor (GCD)
-	function findGCD(a: number, b: number): number {
-		return b === 0 ? a : findGCD(b, a % b);
+		currentQuestion = game.generateQuestion();
 	}
 
 	function checkAnswer() {
-		if (parseInt(userAnswer) === correctAnswer) {
-			score++;
+		if (game.checkAnswer(userAnswer)) {
 			userAnswer = '';
 			generateQuestion();
 		}
@@ -167,48 +96,54 @@ function generateWholeToPartQuestion() {
 		await saveScore();
 		gameState = GameState.EndScreen;
 	}
-  async function saveScore() {
-  try {
-    const formData = new FormData();
-    formData.append('playerName', playerName);
-    formData.append('score', score);
-    formData.append('date', new Date().toISOString());
 
-    const response = await fetch('?/saveScore', {
-      method: 'POST',
-      body: formData
-    });
+	async function saveScore() {
+		try {
+			const formData = new FormData();
+			formData.append('playerName', playerName);
+			formData.append('score', game.getScore().toString());
+			formData.append('gameMode', selectedMode);
+			formData.append('date', new Date().toISOString());
 
-	const result = await response.json();
+			const response = await fetch('?/saveScore', {
+				method: 'POST',
+				body: formData
+			});
 
-	const dataResponse = JSON.parse(result.data)
+			console.log(response);
 
-	if (dataResponse.error) {
-		throw new Error(dataResponse.error);
+			const result = await response.json();
+
+			const dataResponse = JSON.parse(result.data);
+
+			if (dataResponse.error) {
+				throw new Error(dataResponse.error);
+			}
+
+			// Check if the result is an array and get the first element
+			const data = Array.isArray(dataResponse) ? dataResponse[0] : dataResponse;
+
+			if (!data.success) {
+				throw new Error(data.message);
+			}
+
+			playerRank = data.rank;
+			toast.success('Score saved successfully!');
+		} catch (error) {
+			console.error('Error saving score:', error);
+			toast.error('Failed to save score. Please try again.');
+		}
 	}
 
-    // Check if the result is an array and get the first element
-    const data = Array.isArray(dataResponse) ? dataResponse[0] : dataResponse;
-
-	if (!data.success) {
-		throw new Error(data.message);
-	}
-
-    playerRank = data.rank;
-    toast.success('Score saved successfully!');
-  } catch (error) {
-    console.error('Error saving score:', error);
-    toast.error('Failed to save score. Please try again.');
-  }
-}
-
-	function returnToReady() {
-		gameState = GameState.Ready;
+	function returnToModeSelection() {
+		gameState = GameState.ModeSelection;
 	}
 
 	$: if (userAnswer) {
 		checkAnswer();
 	}
+
+	$: score = game ? game.getScore() : 0;
 </script>
 
 <Toaster />
@@ -217,22 +152,35 @@ function generateWholeToPartQuestion() {
 </div>
 <main class="container relative mx-auto mt-12 max-w-4xl p-4 sm:mt-6">
 	{#if gameState === GameState.Welcome}
-		<WelcomeCard on:continue={handleWelcomeContinue} />
+		<WelcomeCard {timeLimit} on:continue={handleWelcomeContinue} />
 	{:else if gameState === GameState.NameEntry}
 		<div class="mx-auto max-w-lg">
 			<h2 class="mb-4 text-2xl font-bold">Enter Your Name</h2>
 			<Input type="text" placeholder="Your name" bind:value={playerName} class="mb-4" />
 			<Button on:click={handleNameSubmit}>Continue</Button>
 		</div>
+	{:else if gameState === GameState.ModeSelection}
+		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+			{#each gameModes as { mode, title, description }}
+				<ModeSelectionCard
+					{mode}
+					{title}
+					{description}
+					onSelect={() => handleModeSelection(mode)}
+				/>
+			{/each}
+		</div>
 	{:else if gameState === GameState.Ready}
 		<div class="mx-auto max-w-lg">
 			<h2 class="mb-4 text-2xl font-bold">Ready to Play, {playerName}?</h2>
+			<p class="mb-4">Mode: {game.getGameModeName()}</p>
+			<p class="mb-4">{game.getGameModeDescription()}</p>
 			<Button on:click={startGame}>Start Game</Button>
 		</div>
 	{:else if gameState === GameState.Playing}
 		<div class="mx-auto max-w-lg">
 			<h2 class="mb-4 text-xl font-semibold">{currentQuestion}</h2>
-			<Input type="text" placeholder="Your answer" bind:value={userAnswer} class="mb-4" />
+			<Input type="number" placeholder="Your answer" bind:value={userAnswer} class="mb-4" />
 			<div class="mb-2 flex justify-between">
 				<span>Score: {score}</span>
 				<span>Time Left: {timeLeft}s</span>
@@ -242,11 +190,16 @@ function generateWholeToPartQuestion() {
 	{:else if gameState === GameState.EndScreen}
 		<div class="mx-auto max-w-lg rounded-lg bg-gray-50 p-6 shadow-md dark:bg-zinc-900">
 			<h2 class="mb-4 text-2xl font-bold">Game Over, {playerName}!</h2>
-			<p class="mb-4 text-3xl font-semibold">Your score: {score}</p>
+			<p class="mb-4 text-3xl font-semibold">Your score: {game.getScore()}</p>
+			<p class="mb-4">Mode: {game.getGameModeName()}</p>
 			{#if playerRank !== null}
 				<p class="mb-4 text-xl">Your rank: {playerRank}</p>
 			{/if}
-			<Button on:click={returnToReady}>Back to Start</Button>
+			<Button on:click={returnToModeSelection} class="mr-2">Change Mode</Button>
+			<Button on:click={startGame} class="mr-2">Play Again</Button>
+			<Button on:click={() => (gameState = GameState.Welcome)} variant="outline"
+				>Back to Welcome</Button
+			>
 		</div>
 	{/if}
 </main>
