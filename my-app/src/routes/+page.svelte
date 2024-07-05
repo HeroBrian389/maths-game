@@ -199,7 +199,7 @@
 	{:else if gameState === GameState.Playing}
 		<div class="mx-auto max-w-lg">
 			<h2 class="mb-4 text-xl font-semibold">{currentQuestion}</h2>
-			<Input type="number" placeholder="Your answer" bind:value={userAnswer} class="mb-4" />
+			<Input type="number" pattern="[0-9]*" placeholder="Your answer" bind:value={userAnswer} class="mb-4" />
 			<div class="mb-2 flex justify-between">
 				<span>Score: {score}</span>
 				<span>Time Left: {timeLeft}s</span>
