@@ -24,6 +24,7 @@
       <li>Questions include addition, subtraction, multiplication, division, and probability</li>
       <li>For probability questions, give the nearest whole number percentage (e.g., 0.33 becomes 33)</li>
       <li>Your score is based on the number of correct answers</li>
+      <li>Good luck!</li>
     </ul>
     <p>Are you ready to challenge yourself?</p>
   </CardContent>
