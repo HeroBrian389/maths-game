@@ -66,19 +66,33 @@
 
 	function handleModeSelection(mode: string) {
 		selectedMode = mode;
-		game = new Game(mode);
+		if (!game) {
+			game = new Game(mode);
+		} else {
+			game.reset(mode);
+		}
 		gameState = GameState.Ready;
 	}
+
+
 
 	function startGame() {
 		gameState = GameState.Playing;
 		timeLeft = timeLimit;
+		game.reset(selectedMode);
 		generateQuestion();
+		startTimer();
+	}
+
+	function startTimer() {
+		if (timerInterval) clearInterval(timerInterval);
 		timerInterval = setInterval(() => {
 			timeLeft--;
 			if (timeLeft <= 0) endGame();
 		}, 1000);
 	}
+
+
 
 	function generateQuestion() {
 		currentQuestion = game.generateQuestion();
@@ -143,7 +157,12 @@
 		checkAnswer();
 	}
 
-	$: score = game ? game.getScore() : 0;
+	let score: number;
+	$: if (game) {
+		game.score.subscribe(value => {
+			score = value;
+		});
+	}
 </script>
 
 <Toaster />
