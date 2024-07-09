@@ -131,7 +131,7 @@
 				</Select.Content>
 			</Select.Root>
 		</div>
-		<div class="mt-6">
+		<div class="mt-6 overflow-y-scroll h-[calc(100vh-158px)]">
 			{#if leaderboard.length > 0}
 				<ul>
 					{#each leaderboard as entry, i}
