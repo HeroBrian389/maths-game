@@ -34,16 +34,8 @@
 			value: 'basic'
 		},
 		{
-			label: 'Advanced',
-			value: 'advanced'
-		},
-		{
-			label: 'Probability',
-			value: 'probability'
-		},
-		{
-			label: 'Large Numbers',
-			value: 'largeNumbers'
+			value: 'fractions',
+			label: 'Fractions'
 		}
 	]
 

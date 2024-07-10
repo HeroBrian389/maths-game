@@ -6,8 +6,11 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import WelcomeCard from '$lib/components/landing/WelcomeCard.svelte';
 	import LeaderboardSheet from '$lib/components/landing/LeaderboardSheet.svelte';
-	import { Game } from '$lib/Game';
+	import { Game, type FractionQuestion } from '$lib/Game';
 	import ModeSelectionCard from '$lib/components/landing/ModeSelectionCard.svelte';
+	import FractionInput from '$lib/components/landing/FractionInput.svelte';
+	import type { Question } from '$lib/GameMode';
+
 
 	enum GameState {
 		Welcome,
@@ -22,7 +25,7 @@
 	let playerName = '';
 	let selectedMode = '';
 	let game: Game;
-	let currentQuestion = '';
+	let currentQuestion: Question | FractionQuestion;
 	let userAnswer = '';
 	let timeLimit = 120;
 	let timeLeft = timeLimit;
@@ -36,19 +39,9 @@
 			description: 'Practice with numbers up to 100. Ideal for beginners.'
 		},
 		{
-			mode: 'advanced',
-			title: 'Advanced Mode',
-			description: 'Challenge yourself with larger numbers up to 1000.'
-		},
-		{
-			mode: 'probability',
-			title: 'Probability Mode',
-			description: 'Test your skills with percentage and probability questions.'
-		},
-		{
-			mode: 'largeNumbers',
-			title: 'Large Numbers Mode',
-			description: 'Master operations with very large numbers.'
+			mode: 'fractions',
+			title: 'Fractions mode',
+			description: 'The same as basic but with fractions.'
 		}
 	];
 
@@ -92,17 +85,26 @@
 		}, 1000);
 	}
 
-
+	
 
 	function generateQuestion() {
 		currentQuestion = game.generateQuestion();
 	}
 
-	function checkAnswer() {
-		if (game.checkAnswer(userAnswer)) {
+	function checkAnswer(numerator?: number, denominator?: number): boolean {
+		let answer: string | { numerator: number; denominator: number };
+		if (numerator !== undefined && denominator !== undefined) {
+			answer = { numerator, denominator };
+		} else {
+			answer = userAnswer;
+		}
+
+		if (game.checkAnswer(answer)) {
 			userAnswer = '';
 			generateQuestion();
-		}
+			return true;
+		} 
+		return false;
 	}
 
 	async function endGame() {
@@ -166,7 +168,7 @@
 </script>
 
 <Toaster />
-<div class="absolute right-4 top-4">
+<div class="absolute right-4 top-4 z-50">
 	<LeaderboardSheet />
 </div>
 <main class="container relative mx-auto mt-12 max-w-4xl p-4 sm:mt-6">
@@ -198,8 +200,13 @@
 		</div>
 	{:else if gameState === GameState.Playing}
 		<div class="mx-auto max-w-lg">
-			<h2 class="mb-4 text-xl font-semibold">{currentQuestion}</h2>
-			<Input type="number" pattern="[0-9]*" placeholder="Your answer" bind:value={userAnswer} class="mb-4" />
+			{#if 'operation' in currentQuestion}
+				<FractionInput question={currentQuestion} onAnswer={checkAnswer} />
+			{:else}
+				<h2 class="mb-4 text-xl font-semibold">{currentQuestion.text}</h2>
+				<Input type="number" pattern="[0-9]*" placeholder="Your answer" bind:value={userAnswer} class="mb-4" />
+				<Button on:click={() => checkAnswer()}>Submit</Button>
+			{/if}
 			<div class="mb-2 flex justify-between">
 				<span>Score: {score}</span>
 				<span>Time Left: {timeLeft}s</span>
