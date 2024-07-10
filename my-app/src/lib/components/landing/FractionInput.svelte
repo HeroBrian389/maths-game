@@ -2,7 +2,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import type { FractionQuestion } from '$lib/Game';
-	import { CaretDown } from 'phosphor-svelte';
+	import { CaretDown, CaretUp } from 'phosphor-svelte';
 	import { onMount } from 'svelte';
 
 	export let onAnswer: (numerator: number, denominator: number) => boolean;
@@ -72,7 +72,7 @@
 	<div class="flex items-center gap-x-6 text-2xl font-bold">
 		<div class="flex flex-col gap-y-1">
 			<span>{question.num1}</span>
-			<span class="h-px w-full bg-zinc-500 dark:bg-zinc-400" />
+			<span class="h-px w-full bg-zinc-200 dark:bg-zinc-700" />
 			<span>{question.den1}</span>
 		</div>
 
@@ -80,7 +80,7 @@
 
 		<div class="flex flex-col gap-y-1">
 			<span>{question.num2}</span>
-			<span class="h-px w-full bg-zinc-500 dark:bg-zinc-400" />
+			<span class="h-px w-full bg-zinc-200 dark:bg-zinc-700" />
 			<span>{question.den2}</span>
 		</div>
 
@@ -96,7 +96,7 @@
 			>
 				<input bind:this={numeratorInput} type="number" />
 			</Input>
-			<span class="h-px w-full bg-zinc-500 dark:bg-zinc-400" />
+			<span class="h-px w-full bg-zinc-200 dark:bg-zinc-700" />
 			<Input
 				bind:value={denominator}
 				on:focus={() => (focusedInput = 'denominator')}
@@ -107,8 +107,12 @@
 			</Input>
 		</div>
 
-		<Button on:click={toggleFocus} size="icon" class="px-8 py-2 text-lg">
-			<CaretDown size={16} />
-		</Button>
+		<Button on:click={toggleFocus} size="icon" variant="ghost">
+            {#if focusedInput === 'numerator'}
+              <CaretDown size={16} />
+            {:else}
+              <CaretUp size={16} />
+            {/if}
+        </Button>
 	</div>
 </div>
