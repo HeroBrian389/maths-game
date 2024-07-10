@@ -69,7 +69,7 @@
 </script>
 
 <div class="flex flex-col items-center space-y-4">
-	<div class="flex items-center gap-x-6 text-2xl font-bold">
+	<div class="flex items-center md:gap-x-6 gap-x-2 text-2xl font-bold">
 		<div class="flex flex-col gap-y-1">
 			<span>{question.num1}</span>
 			<span class="h-px w-full bg-zinc-200 dark:bg-zinc-700" />
